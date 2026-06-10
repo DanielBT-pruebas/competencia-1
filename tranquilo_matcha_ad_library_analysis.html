@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tranquilo Matcha — Análisis Ad Library</title>
+<style>
+  :root {
+    --green: #2d6a4f;
+    --green-light: #40916c;
+    --green-pale: #d8f3dc;
+    --green-muted: #b7e4c7;
+    --ink: #1a1a1a;
+    --ink-soft: #3d3d3d;
+    --gray: #6b7280;
+    --gray-light: #f0f0f0;
+    --white: #ffffff;
+    --accent: #e9c46a;
+    --accent-dark: #c9a227;
+    --red: #e63946;
+    --border: #e2e8f0;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Georgia', serif;
+    color: var(--ink);
+    background: #fafaf8;
+    line-height: 1.7;
+  }
+  .sans { font-family: -apple-system, 'Helvetica Neue', sans-serif; }
+
+  /* HEADER */
+  .header {
+    background: var(--green);
+    color: white;
+    padding: 56px 0 48px;
+    text-align: center;
+  }
+  .header .brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 32px;
+    padding: 6px 20px;
+    font-family: -apple-system, sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .header h1 {
+    font-size: 42px;
+    font-weight: 400;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .header h1 em { font-style: normal; color: var(--accent); }
+  .header .subtitle {
+    font-family: -apple-system, sans-serif;
+    font-size: 15px;
+    opacity: 0.75;
+    margin-bottom: 40px;
+  }
+  .header-meta {
+    display: inline-flex;
+    gap: 32px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 20px 36px;
+  }
+  .header-meta .stat { text-align: center; }
+  .header-meta .stat .num {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    font-family: -apple-system, sans-serif;
+    color: var(--accent);
+  }
+  .header-meta .stat .lbl {
+    font-family: -apple-system, sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.65;
+  }
+
+  /* LAYOUT */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+  .section { padding: 60px 0; border-bottom: 1px solid var(--border); }
+  .section:last-child { border-bottom: none; }
+
+  .section-label {
+    font-family: -apple-system, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--green-light);
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 32px;
+    letter-spacing: -0.3px;
+  }
+
+  /* CARDS GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+  .card-accent {
+    background: var(--green);
+    color: white;
+    border-color: var(--green);
+  }
+  .card-accent .card-title, .card-accent p, .card-accent .value { color: white; }
+  .card-title {
+    font-family: -apple-system, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gray);
+    margin-bottom: 12px;
+  }
+  .card .value {
+    font-size: 36px;
+    font-weight: 700;
+    font-family: -apple-system, sans-serif;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .card .sub { font-family: -apple-system, sans-serif; font-size: 13px; color: var(--gray); }
+
+  /* FORMAT BARS */
+  .format-bar { margin-bottom: 16px; }
+  .format-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: -apple-system, sans-serif;
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  .format-bar-label .name { font-weight: 600; color: var(--ink-soft); }
+  .format-bar-label .pct { color: var(--gray); }
+  .bar-track {
+    height: 8px;
+    background: var(--gray-light);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s;
+  }
+  .bar-green { background: var(--green); }
+  .bar-green-light { background: var(--green-light); }
+  .bar-accent { background: var(--accent); }
+  .bar-gray { background: #94a3b8; }
+
+  /* TOP ADS */
+  .ad-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    gap: 20px;
+    align-items: start;
+  }
+  .ad-rank {
+    width: 40px;
+    height: 40px;
+    background: var(--green);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .ad-rank.gold { background: var(--accent-dark); }
+  .ad-rank.silver { background: #94a3b8; }
+  .ad-rank.bronze { background: #b5651d; }
+  .ad-copy {
+    font-size: 15px;
+    font-style: italic;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  .ad-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .badge {
+    font-family: -apple-system, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .badge-green { background: var(--green-pale); color: var(--green); }
+  .badge-blue { background: #dbeafe; color: #1d4ed8; }
+  .badge-yellow { background: #fef9c3; color: #854d0e; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .badge-gray { background: var(--gray-light); color: var(--gray); }
+  .badge-purple { background: #ede9fe; color: #6d28d9; }
+  .ad-analysis {
+    font-family: -apple-system, sans-serif;
+    font-size: 13px;
+    color: var(--gray);
+    line-height: 1.6;
+  }
+  .ad-duration {
+    font-family: -apple-system, sans-serif;
+    font-size: 12px;
+    color: var(--gray);
+    white-space: nowrap;
+    text-align: right;
+  }
+  .ad-duration .days {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--green);
+    display: block;
+  }
+  .ad-duration .label { color: var(--gray); font-size: 11px; }
+
+  /* MESSAGES */
+  .message-cluster {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+  }
+  .message-cluster-title {
+    font-family: -apple-system, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+  }
+  .message-quote {
+    font-size: 14px;
+    font-style: italic;
+    color: var(--ink-soft);
+    border-left: 3px solid var(--green-muted);
+    padding-left: 12px;
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+  .message-note {
+    font-family: -apple-system, sans-serif;
+    font-size: 12px;
+    color: var(--gray);
+    margin-top: 8px;
+  }
+
+  /* PERSONAS */
+  .persona-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .persona-icon { font-size: 28px; margin-bottom: 10px; }
+  .persona-name {
+    font-family: -apple-system, sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .persona-desc {
+    font-family: -apple-system, sans-serif;
+    font-size: 12px;
+    color: var(--gray);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .persona-signals {
+    font-family: -apple-system, sans-serif;
+    font-size: 11px;
+    color: var(--gray);
+    font-style: italic;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+
+  /* LONGEVITY TABLE */
+  .longevity-item {
+    display: grid;
+    grid-template-columns: 1fr 120px 80px;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+  .longevity-item:last-child { border-bottom: none; }
+  .longevity-copy {
+    font-size: 14px;
+    font-style: italic;
+    color: var(--ink-soft);
+  }
+  .longevity-dates {
+    font-family: -apple-system, sans-serif;
+    font-size: 11px;
+    color: var(--gray);
+  }
+  .longevity-days {
+    font-family: -apple-system, sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--green);
+    text-align: right;
+  }
+  .longevity-days span {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--gray);
+    display: block;
+  }
+
+  /* TIMELINE */
+  .timeline {
+    position: relative;
+    padding-left: 24px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--green-muted);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--green);
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px var(--green-muted);
+  }
+  .timeline-date {
+    font-family: -apple-system, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--green-light);
+    margin-bottom: 4px;
+  }
+  .timeline-content {
+    font-family: -apple-system, sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .timeline-content strong { color: var(--ink); }
+
+  /* STRATEGY */
+  .insight-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .insight-box {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .insight-box.positive { border-left: 4px solid var(--green); }
+  .insight-box.gap { border-left: 4px solid var(--accent-dark); }
+  .insight-box.opportunity { border-left: 4px solid var(--red); }
+  .insight-title {
+    font-family: -apple-system, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .insight-title .icon { font-size: 16px; }
+  .insight-list {
+    list-style: none;
+    font-family: -apple-system, sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .insight-list li {
+    padding: 5px 0;
+    padding-left: 14px;
+    position: relative;
+    border-bottom: 1px solid var(--gray-light);
+    line-height: 1.5;
+  }
+  .insight-list li:last-child { border-bottom: none; }
+  .insight-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--green-light);
+    font-size: 11px;
+  }
+
+  /* CONCLUSION */
+  .conclusion {
+    background: var(--green);
+    color: white;
+    border-radius: 16px;
+    padding: 40px;
+    margin-top: 40px;
+  }
+  .conclusion h3 {
+    font-size: 22px;
+    font-weight: 400;
+    margin-bottom: 20px;
+    color: var(--accent);
+  }
+  .conclusion p {
+    font-family: -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.8;
+    opacity: 0.9;
+    margin-bottom: 16px;
+  }
+  .conclusion p:last-child { margin-bottom: 0; }
+  .conclusion strong { color: var(--accent); font-weight: 600; }
+
+  /* PIE CHART SVG */
+  .chart-wrap { display: flex; gap: 32px; align-items: center; }
+  .legend { flex: 1; }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-family: -apple-system, sans-serif;
+    font-size: 13px;
+  }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  /* ACTIVE BADGE */
+  .active-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: -apple-system, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: #16a34a;
+    background: #dcfce7;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .active-dot {
+    width: 6px;
+    height: 6px;
+    background: #16a34a;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* FOOTER */
+  .footer {
+    background: var(--ink);
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    padding: 24px;
+    font-family: -apple-system, sans-serif;
+    font-size: 12px;
+  }
+  .footer strong { color: rgba(255,255,255,0.8); }
+
+  @media (max-width: 768px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .header-meta { flex-direction: column; gap: 16px; }
+    .ad-card { grid-template-columns: 1fr; }
+    .insight-row { grid-template-columns: 1fr; }
+    .longevity-item { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="container">
+    <div class="brand-badge">🍵 Análisis Competitivo · Meta Ad Library</div>
+    <h1>Tranquilo <em>Matcha</em></h1>
+    <p class="subtitle">Análisis completo de estrategia publicitaria · Datos extraídos en vivo · Junio 2026</p>
+    <div class="header-meta">
+      <div class="stat"><span class="num">~490</span><span class="lbl">Anuncios totales</span></div>
+      <div class="stat"><span class="num">27</span><span class="lbl">Activos ahora</span></div>
+      <div class="stat"><span class="num">13</span><span class="lbl">Meses de historial</span></div>
+      <div class="stat"><span class="num">15.9K</span><span class="lbl">Seguidores IG</span></div>
+      <div class="stat"><span class="num">€ EUR</span><span class="lbl">Mercado principal</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 1. CONTEXTO DE LA MARCA -->
+<div class="section">
+  <div class="container">
+    <p class="section-label">Contexto</p>
+    <h2 class="section-title">¿Qué es Tranquilo Matcha?</h2>
+    <div class="grid-2" style="gap:24px;align-items:start;">
+      <div>
+        <p style="font-size:16px;color:var(--ink-soft);margin-bottom:20px;line-height:1.8;">
+          Marca española de matcha ceremonial con base en Barcelona. Fundada el <strong>14 de enero de 2024</strong> (2 años y medio al momento de este análisis). Venden matcha de origen único japonés, accesorios cerámicos y kits completos. Operan en el mercado europeo con publicidad en inglés y envío mundial.
+        </p>
+        <p style="font-size:14px;color:var(--gray);font-family:-apple-system,sans-serif;line-height:1.7;">
+          Su tagline de marca — <em>"A casual matcha brand. Whisked in Barcelona."</em> — funciona como positioning statement que aparece en docenas de anuncios y en el descriptor de su catálogo DPA. Comunica accesibilidad (casual) sin perder origen de calidad (Barcelona = cosmopolita europeo).
+        </p>
+      </div>
+      <div class="grid-2" style="gap:12px;">
+        <div class="card">
+          <div class="card-title">Página creada</div>
+          <div class="value" style="font-size:20px;">Ene 2024</div>
+          <div class="sub">2 años 5 meses de vida</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Instagram</div>
+          <div class="value" style="font-size:20px;">15.9K</div>
+          <div class="sub">@tranquilomatcha</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Moneda / Mercado</div>
+          <div class="value" style="font-size:20px;">EUR</div>
+          <div class="sub">España + Europa + worldwide</div>
+        </div>
+        <div class="card card-accent">
+          <div class="card-title" style="color:rgba(255,255,255,0.6);">Ritmo de ads</div>
+          <div class="value" style="color:var(--accent);">~38</div>
+          <div class="sub">anuncios nuevos/mes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. FORMATOS -->
+<div class="section">
+  <div class="container">
+    <p class="section-label">01 · Formatos</p>
+    <h2 class="section-title">¿Qué tipo de creativos están usando?</h2>
+    <div class="grid-2" style="gap:32px;align-items:start;">
+      <div>
+        <div class="format-bar">
+          <div class="format-bar-label"><span class="name">Video corto (3–21 seg)</span><span class="pct">~58%</span></div>
+          <div class="bar-track"><div class="bar-fill bar-green" style="width:58%"></div></div>
+        </div>
+        <div class="format-bar">
+          <div class="format-bar-label"><span class="name">Imagen estática / producto</span><span class="pct">~22%</span></div>
+          <div class="bar-track"><div class="bar-fill bar-green-light" style="width:22%"></div></div>
+        </div>
+        <div class="format-bar">
+          <div class="format-bar-label"><span class="name">DPA / Catálogo dinámico</span><span class="pct">~15%</span></div>
+          <div class="bar-track"><div class="bar-fill bar-accent" style="width:15%"></div></div>
+        </div>
+        <div class="format-bar">
+          <div class="format-bar-label"><span class="name">Carrusel de accesorios</span><span class="pct">~5%</span></div>
+          <div class="bar-track"><div class="bar-fill bar-gray" style="width:5%"></div></div>
+        </div>
+        <p style="font-family:-apple-system,sans-serif;font-size:12px;color:var(--gray);margin-top:12px;">Estimación basada en análisis de ~100 ads del top por impresiones.</p>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:14px;">
+          <div class="card-title">Video — el formato dominante</div>
+          <p style="font-family:-apple-system,sans-serif;font-size:13px;color:var(--ink-soft);line-height:1.6;">
+            La gran mayoría del presupuesto va a videos de <strong>3 a 21 segundos</strong>. Son cortos, visuales, sin voz en off — generalmente muestran el ritual de preparación, los accesorios o el producto en contexto de desayuno/morning routine. El video más largo visible es de 21 segundos ("A matcha cortado"). El más corto, 3 segundos (Samidori).
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-title">DPA — retargeting silencioso</div>
+          <p style="font-family:-apple-system,sans-serif;font-size:13px;color:var(--ink-soft);line-height:1.6;">
+            Usan catálogo dinámico (<code>{{product.name}}</code>) con el tagline "Whisked in Barcelona" como headline fijo. Esto es retargeting/fondo de funnel automatizado. Las DPA llevan etiqueta de "Transparencia UE", lo que confirma que son anuncios de producto directo, no branded content.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. PARTNERSHIPS vs BRAND -->
+<div class="section">
+  <div class="container">
+    <p class="section-label">02 · Partnerships vs. Brand Ads</p>
+    <h2 class="section-title">¿Están apostando al creator marketing?</h2>
+    <div class="grid-2" style="gap:24px;align-items:start;">
+      <div>
+        <div class="card" style="margin-bottom:16px;border-left:4px solid var(--green);">
+          <div class="card-title">Brand-owned (99%+)</div>
+          <div class="value" style="font-size:32px;color:var(--green);">~485+</div>
+          <div class="sub">Anuncios publicados directamente por la marca</div>
+        </div>
+        <div class="card" style="border-left:4px solid var(--accent-dark);">
+          <div class="card-title">Partnerships / Collab visibles</div>
+          <div class="value" style="font-size:32px;color:var(--accent-dark);">1</div>
+          <div class="sub">Mansi x Tranquilo — collab de producto (cerámica)</div>
+        </div>
+      </div>
+      <div>
+        <div class="message-cluster">
+          <div class="message-cluster-title">🍎 Mansi x Tranquilo — la única collab visible</div>
+          <div class="message-quote">"Whisk Holder - Mansi x Tranquilo 🍎" — 8 may – 16 jul 2025</div>
+          <div class="message-quote">"Bol (Chawan) - Mansi x Tranquilo" — 11 feb – 1 may 2026</div>
+          <div class="message-quote">"20% OFF — Just for 48 hours. *Ceramics from the X MANSI collection not included"</div>
+          <p class="message-note">Mansi parece ser una ceramista/diseñadora. No es un creator de contenido sino una collab de producto. Sus piezas tienen precio premium (excluidas del descuento del 20%). Han lanzado al menos 2 piezas juntos a lo largo de 2025–2026.</p>
+        </div>
+        <div class="card" style="margin-top:16px;background:var(--gray-light);border-color:var(--border);">
+          <div class="card-title">Veredicto</div>
+          <p style="font-family:-apple-system,sans-serif;font-size:13px;color:var(--ink-soft);line-height:1.6;">
+            <strong>No hacen creator marketing</strong> en el sentido tradicional. No hay ningún anuncio "with @creator". Todo es contenido propio de la marca. La collab Mansi es más una collaboración artesanal de producto que una estrategia de influencer marketing. Su crecimiento en Meta viene 100% de creativos propios.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. MENSAJES QUE REPITEN -->
+<div class="section">
+  <div class="container">
+    <p class="section-label">03 · Mensajes Recurrentes</p>
+    <h2 class="section-title">¿Qué quieren que les quede grabado?</h2>
+    <div class="grid-2" style="gap:16px;">
+
+      <div class="message-cluster">
+        <div class="message-cluster-title">🏷️ Tagline de marca — identidad</div>
+        <div class="message-quote">"A casual matcha brand. Whisked in Barcelona."</div>
+        <div class="message-quote">"A casual matcha brand. Whisked in Barcelona. Shipping worldwide."</div>
+        <p class="message-note">Aparece en decenas de anuncios como headline y como texto DPA fijo. Es el núcleo de su branding: accesible, europeo, moderno. "Casual" como antídoto a la rigidez de la ceremonia japonesa.</p>
+      </div>
+
+      <div class="message-cluster">
+        <div class="message-cluster-title">📧 Email capture — descuento de entrada</div>
+        <div class="message-quote">"Subscribe now and get 10% off your first order!"</div>
+        <div class="message-quote">"Discover our matcha & accessories. Subscribe now and get 10% off your first order ♥"</div>
+        <div class="message-quote">"Get it now with a 10% off"</div>
+        <p class="message-note">El descuento de entrada (10%, a veces 5%) es uno de sus mensajes más reforzados y de mayor impresión. Es su mecanismo principal de captura para email marketing.</p>
+      </div>
+
+      <div class="message-cluster">
+        <div class="message-cluster-title">🍵 Origen único — señal de calidad</div>
+        <div class="message-quote">"Try our finest matcha - SAMIDORI Single Origin"</div>
+        <div class="message-quote">"Try our finest matcha from Wazuka - SAMIDORI Single Origin"</div>
+        <div class="message-quote">"Our finest matcha. Okumidori Single Origin from Fuji, Shizuoka, Japan."</div>
+        <div class="message-quote">"Our most umami-rich matcha yet. 03 Tsuyuhikari, a premium Single Origin matcha from Yame, Japan."</div>
+        <p class="message-note">Los nombres de región (Wazuka, Shizuoka, Yame) son detalles de calidad deliberados. Quieren que el cliente sepa que esto no es matcha genérico de supermercado.</p>
+      </div>
+
+      <div class="message-cluster">
+        <div class="message-cluster-title">🏠 Preparación en casa — accesibilidad</div>
+        <div class="message-quote">"Become a true matcha barista at home."</div>
+        <div class="message-quote">"Get your matcha starter kit now, your home deserves it."</div>
+        <div class="message-quote">"Choose the matcha set that fits you best. Start making matcha at home."</div>
+        <div class="message-quote">"Pick our matcha Blend or Samidori, make it at home, and enjoy it anywhere."</div>
+        <p class="message-note">El concepto de "hacerlo en casa" baja la barrera de entrada. No necesitás ir a una cafetería especializada. El kit lo hace accesible.</p>
+      </div>
+
+      <div class="message-cluster">
+        <div class="message-cluster-title">🎁 Bundle / Kit — ticket más alto</div>
+        <div class="message-quote">"Become a true matcha barista at home. The set includes: 50g ceremonial matcha, chawan and sifter."</div>
+        <div class="message-quote">"Not just a pretty tin. Fill it with matcha — shop the bundle now."</div>
+        <div class="message-quote">"This Valentine's, the perfect gift is matcha. A complete matcha set for matcha lovers."</div>
+        <div class="message-quote">"NEW GIFT SET. Carefully packed, ready to gift."</div>
+        <p class="message-note">Los kits son su mecanismo de upsell. Generan tickets más altos y funcionan como regalo perfecto para quien no sabe qué comprar. El copy de "regalo" se repite en Valentine's, noviembre y enero.</p>
+      </div>
+
+      <div class="message-cluster">
+        <div class="message-cluster-title">⚡ Escasez y urgencia</div>
+        <div class="message-quote">"Good news — we're back in stock! All your favorite matcha & accessories are available again ♥"</div>
+        <div class="message-quote">"Our best-selling chawan is back in stock. Get yours now before it's gone!!!"</div>
+        <div class="message-quote">"Our glass chawan and whisk holder are back. Limited stock!!!"</div>
+        <div class="message-quote">"BACK IN STOCK. 2 in 1."</div>
+        <p class="message-note">Los "back in stock" son frecuentes y funcionan como ad de urgencia/FOMO. Sugiere que genuinamente se les acaba el stock o que lo gestionan intencionalmente como táctica de escasez.</p>
+      </div>
+
+      <div class="message-cluster">
+        <div class="message-cluster-title">🌅 Lifestyle / Ritual matutino</div>
+        <div class="message-quote">"Looking for that satisfaction? Get yours and make it at home."</div>
+        <div class="message-quote">"This sound in the morning >>>"</div>
+        <div class="message-quote">"Get your matcha and make breakfast look like this."</div>
+        <div class="message-quote">"Sea salt honey matcha latte 🧂"</div>
+        <div class="message-quote">"What's in my bag matcha edition: the essentials."</div>
+        <p class="message-note">Ads más aspiracionales que empujan el estilo de vida, no el producto. El copy de "satisfacción" es especialmente efectivo — apela al deseo sin sobre-explicar.</p>
+      </div>
+
+      <div class="message-cluster">
+        <div class="message-cluster-title">🗓️ Promociones estacionales</div>
+        <div class="message-quote">"20% OFF — Just for 48 hours — July 16 & 17. Use code PACKYOURGREENS"</div>
+        <div class="message-quote">"BLACK FRIDAY. UP TO 30% OFF."</div>
+        <div class="message-quote">"BLACK FRIDAY EXCLUSIVE: CERAMIC DEALS YOU ONLY GET ONCE A YEAR."</div>
+        <div class="message-quote">"15% OFF · 2ND ANNIVERSARY · LIMITED TIME"</div>
+        <div class="message-quote">"We turn 2 this Sunday. Leave your email to see what we're preparing."</div>
+        <p class="message-note">Calendario promocional bien marcado: flash sale de verano, Black Friday, aniversario en enero, Valentine's en febrero. Usan el aniversario como evento de marca propio.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 5. AUDIENCIAS -->
+<div class="section">
+  <div class="container">
+    <p class="section-label">04 · Audiencias</p>
+    <h2 class="section-title">¿A quién le están hablando?</h2>
+    <div class="grid-2" style="gap:16px;">
+
+      <div class="persona-card">
+        <div class="persona-icon">☕</div>
+        <div class="persona-name">El converso del café</div>
+        <div class="persona-desc">Toma café, quiere reducirlo o encontrar una alternativa con menos ansiedad. Está en el momento "escuché que el matcha es mejor". Urbano, 28–38 años, trabaja desde casa o en oficina. Le importa la estética del ritual tanto como el producto.</div>
+        <div class="persona-signals">Señales en ads: "matcha barista at home", "start making matcha", starter kits, videos de ritual de preparación</div>
+      </div>
+
+      <div class="persona-card">
+        <div class="persona-icon">🎁</div>
+        <div class="persona-name">El gifter sofisticado</div>
+        <div class="persona-desc">Busca un regalo original para alguien que "ya tiene todo". El kit de matcha es una opción más interesante que flores o vino. Podría no saber nada de matcha — le compra a un amigo/pareja que sí sabe. Valentine's, cumpleaños, Navidad.</div>
+        <div class="persona-signals">Señales: "perfect gift for matcha lovers", "complete set", "carefully packed, ready to gift", "An easy gift for matcha lovers"</div>
+      </div>
+
+      <div class="persona-card">
+        <div class="persona-icon">🧘</div>
+        <div class="persona-name">La wellness urbanita</div>
+        <div class="persona-desc">Mujer, 25–40, interesada en slow living, rituales matutinos, estética limpia. El matcha encaja en su identidad visual de IG. No es el precio lo que la frena — es el "cómo se prepara bien". Los accesorios cerámicos son parte del atractivo.</div>
+        <div class="persona-signals">Señales: "your home deserves it", "breakfast look like this", "sea salt honey matcha latte", chawans de diseño (Mansi collab, red chawan, glass chawan)</div>
+      </div>
+
+      <div class="persona-card">
+        <div class="persona-icon">🔬</div>
+        <div class="persona-name">El foodie de origen</div>
+        <div class="persona-desc">Ya conoce el matcha pero quiere calidad real. Sabe qué es un single origin, le importa de dónde viene, quiere entender el perfil de sabor (umami, dulzura, cuerpo). Está dispuesto a pagar más si hay razón. Probablemente compra café de especialidad también.</div>
+        <div class="persona-signals">Señales: "Single Origin from Wazuka / Fuji / Yame", "rich in deep umami", "sweetest and smoothest profile", "most umami-rich matcha yet", catas comparativas (Okumidori vs Tsuyuhikari)</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 6. TOP 10 ADS -->
+<div class="section">
+  <div class="container">
+    <p class="section-label">05 · Top 10 Ads por Impresiones</p>
+    <h2 class="section-title">Los anuncios que más alcance generaron</h2>
+    <p style="font-family:-apple-system,sans-serif;font-size:13px;color:var(--gray);margin-bottom:28px;">Ordenados según el ranking de la Ad Library (sort por total_impressions desc). Los primeros en la lista son los que más impresiones acumuladas tienen.</p>
+
+    <!-- AD 1 -->
+    <div class="ad-card">
+      <div class="ad-rank gold">1</div>
+      <div>
+        <div class="ad-copy">"Subscribe now and get 10% off your first order!"</div>
+        <div class="ad-meta">
+          <span class="badge badge-blue">📹 Video 0:08</span>
+          <span class="badge badge-green">May – Ago 2025</span>
+          <span class="badge badge-gray">4 versiones</span>
+          <span class="badge badge-yellow">FB · IG · Threads · Messenger</span>
+        </div>
+        <div class="ad-analysis">El ad con más impresiones de toda su historia. Un video corto de 8 segundos con gancho de descuento del 10%. Posicionado al tope del funnel como generador de lista de email. Funcionó porque combina incentivo concreto (10% off), format de video corto que para el scroll, y CTA directo. Corrió desde el lanzamiento intensivo de mayo hasta agosto — 3 meses completos. El hecho de que sea el #1 en impresiones confirma que esta mecánica de captura de email es su motor principal de adquisición.</div>
+      </div>
+      <div class="ad-duration"><span class="days">95</span><span class="label">días activo</span></div>
+    </div>
+
+    <!-- AD 2 -->
+    <div class="ad-card">
+      <div class="ad-rank silver">2</div>
+      <div>
+        <div class="ad-copy">"Try our finest matcha - SAMIDORI Single Origin"</div>
+        <div class="ad-meta">
+          <span class="badge badge-gray">🖼️ Imagen estática</span>
+          <span class="badge badge-green">Ago – Oct 2025</span>
+          <span class="badge badge-yellow">10 versiones</span>
+          <span class="badge badge-yellow">FB · IG · TikTok · Threads · Messenger</span>
+        </div>
+        <div class="ad-analysis">El producto estrella — el Samidori — en imagen. 10 versiones distintas de este mismo copy, lo que indica un testing A/B masivo de creativos (fondos, ángulos, staging). Están en TikTok también, ampliando la distribución. La brevedad del copy ("Try our finest matcha") funciona como tease: no explica demasiado, te invita a descubrir. El "finest" crea jerarquía de producto sin tener que escribir un párrafo.</div>
+      </div>
+      <div class="ad-duration"><span class="days">54</span><span class="label">días activo</span></div>
+    </div>
+
+    <!-- AD 3 -->
+    <div class="ad-card">
+      <div class="ad-rank bronze">3</div>
+      <div>
+        <div class="ad-copy">"Try our finest matcha from Wazuka - SAMIDORI Single Origin"</div>
+        <div class="ad-meta">
+          <span class="badge badge-blue">📹 Video 0:03</span>
+          <span class="badge badge-green">Jul – Dic 2025</span>
+          <span class="badge badge-yellow">9 versiones</span>
+        </div>
+        <div class="ad-analysis">La variante con origen geográfico específico. Agregar "from Wazuka" al copy convierte el claim de calidad en un hecho verificable. Video de 3 segundos: imposible de hacer más corto y seguir siendo un ad. Funcionó 5 meses seguidos — esto es un evergreen de producto que claramente convierte. La combinación video 3s + copy con origen = muy fácil de consumir en feed. Uno de los ads más longevos del portfolio.</div>
+      </div>
+      <div class="ad-duration"><span class="days">153</span><span class="label">días activo</span></div>
+    </div>
+
+    <!-- AD 4 -->
+    <div class="ad-card">
+      <div class="ad-rank" style="background:var(--green-light)">4</div>
+      <div>
+        <div class="ad-copy">"Discover our matcha and accessories and get started now"</div>
+        <div class="ad-meta">
+          <span class="badge badge-gray">🖼️ Imagen / Flat lay accesorios</span>
+          <span class="badge badge-green">Ago 2025 – Ene 2026</span>
+          <span class="badge badge-yellow">10 versiones</span>
+        </div>
+        <div class="ad-analysis">El ad de awareness de catálogo. "Get started now" es un CTA de etapa de descubrimiento — para personas que no saben qué quieren comprar. Corrió 5+ meses seguidos con 10 variantes creativas, lo que indica que es uno de sus ads de mayor reutilización. Apunta a público frío que necesita ver el ecosistema completo antes de decidir. La imagen probablemente muestra el flat lay de matcha + accesorios — el "unboxing visual".</div>
+      </div>
+      <div class="ad-duration"><span class="days">166</span><span class="label">días activo</span></div>
+    </div>
+
+    <!-- AD 5 -->
+    <div class="ad-card">
+      <div class="ad-rank" style="background:var(--green-light)">5</div>
+      <div>
+        <div class="ad-copy">"Té Matcha - Ceremonial Blend 50g/100g · A casual matcha brand. Whisked in Barcelona."</div>
+        <div class="ad-meta">
+          <span class="badge badge-purple">🔄 DPA Catálogo</span>
+          <span class="badge badge-green">Sep – Dic 2025</span>
+          <span class="badge badge-green">Transparencia UE</span>
+        </div>
+        <div class="ad-analysis">El ad dinámico de su producto más vendido. El tagline "Whisked in Barcelona" actúa como headline de branding en todos los DPA. Que este ad sea top 5 en impresiones confirma que el retargeting de catálogo es una pieza importante de su mix. Estos ads llegan a quien ya visitó el sitio o interactuó con productos. El hecho de que estén en el top por impresiones indica volumen de audiencia de retargeting relevante.</div>
+      </div>
+      <div class="ad-duration"><span class="days">112</span><span class="label">días activo</span></div>
+    </div>
+
+    <!-- AD 6 -->
+    <div class="ad-card">
+      <div class="ad-rank" style="background:var(--green-light)">6</div>
+      <div>
+        <div class="ad-copy">"Get your matcha starter kit now, your home deserves it."</div>
+        <div class="ad-meta">
+          <span class="badge badge-gray">🖼️ Imagen</span>
+          <span class="badge badge-green">May – Jul 2025</span>
+          <span class="badge badge-green">Transparencia UE</span>
+        </div>
+        <div class="ad-analysis">Copy con ángulo emocional-posesivo: "your home deserves it". No te dice que compres un kit, te dice que TU CASA lo merece. Es una justificación de compra disfrazada de validación. Muy efectivo para romper la barrera del "¿necesito esto realmente?". Uno de sus primeros ads de alto impacto — del período de lanzamiento de mayo 2025.</div>
+      </div>
+      <div class="ad-duration"><span class="days">74</span><span class="label">días activo</span></div>
+    </div>
+
+    <!-- AD 7 -->
+    <div class="ad-card">
+      <div class="ad-rank" style="background:var(--green-light)">7</div>
+      <div>
+        <div class="ad-copy">"Become a true matcha barista at home. The set includes: 50g ceremonial matcha, chawan and sifter."</div>
+        <div class="ad-meta">
+          <span class="badge badge-gray">🖼️ Imagen kit</span>
+          <span class="badge badge-green">Ago – Nov 2025</span>
+          <span class="badge badge-yellow">2 versiones</span>
+        </div>
+        <div class="ad-analysis">El mejor ad de kit que tienen. Combine identidad aspiracional ("matcha barista") con listing explícito del contenido. Es el único ad en el top 10 que detalla exactamente qué hay dentro del set — lo que elimina la fricción de "¿qué viene en el kit?". Funcionó más de 3 meses. Seguramente fue el ad que más impulsó la venta del starter kit como SKU.</div>
+      </div>
+      <div class="ad-duration"><span class="days">99</span><span class="label">días activo</span></div>
+    </div>
+
+    <!-- AD 8 -->
+    <div class="ad-card">
+      <div class="ad-rank" style="background:var(--green-light)">8</div>
+      <div>
+        <div class="ad-copy">"Discover our matcha & accessories. Subscribe now and get 10% off your first order ♥"</div>
+        <div class="ad-meta">
+          <span class="badge badge-gray">🖼️ Imagen multi-producto</span>
+          <span class="badge badge-green">Dic 2025 – Ene 2026</span>
+          <span class="badge badge-yellow">9 versiones</span>
+        </div>
+        <div class="ad-analysis">La versión Q4/invierno del email capture con el catálogo completo. Combina dos ángulos en un solo ad: descubrir el ecosistema Y el incentivo del 10%. Corrió en el período de mayor compra del año (diciembre) con 9 variantes. El ♥ en el copy humaniza la marca sin volverse cursi.</div>
+      </div>
+      <div class="ad-duration"><span class="days">53</span><span class="label">días activo</span></div>
+    </div>
+
+    <!-- AD 9 -->
+    <div class="ad-card">
+      <div class="ad-rank" style="background:var(--green-light)">9</div>
+      <div>
+        <div class="ad-copy">"A casual matcha brand. Whisked in Barcelona. Shipping worldwide."</div>
+        <div class="ad-meta">
+          <span class="badge badge-blue">📹 Video 0:08</span>
+          <span class="badge badge-green">May – Ago 2025</span>
+          <span class="badge badge-yellow">4 versiones</span>
+        </div>
+        <div class="ad-analysis">El ad de "quiénes somos" — puro branding. El copy ES el tagline de la marca. "Shipping worldwide" agrega cobertura geográfica. Que sea top 9 en impresiones indica que invirtieron fuerte en brand awareness puro en su período de lanzamiento (mayo–agosto 2025). Un video de 8 segundos probablemente muestra el proceso de preparación o el producto de forma aspiracional.</div>
+      </div>
+      <div class="ad-duration"><span class="days">95</span><span class="label">días activo</span></div>
+    </div>
+
+    <!-- AD 10 -->
+    <div class="ad-card">
+      <div class="ad-rank" style="background:var(--green-light)">10</div>
+      <div>
+        <div class="ad-copy">"Looking for that satisfaction? Get yours and make it at home."</div>
+        <div class="ad-meta">
+          <span class="badge badge-blue">📹 Video 0:07</span>
+          <span class="badge badge-green">May – Dic 2025</span>
+          <span class="badge badge-yellow">13 versiones — MÁXIMO TESTING</span>
+        </div>
+        <div class="ad-analysis">El ad más testeado de toda su historia (13 versiones). Corrió 7.5 meses, el período más largo de todos sus creativos. El copy apela a una emoción difusa e inmediatamente reconocible: "esa satisfacción". No dice qué es, pero todos saben de qué habla. Es un hook psicológico brillante para el segmento que está entre el café y el matcha. El hecho de que sea el ad más longevo confirma que este fue su anuncio más rentable de todo el período analizado.</div>
+      </div>
+      <div class="ad-duration"><span class="days">230</span><span class="label">días activo</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 7. LONGEVIDAD -->
+<div class="section">
+  <div class="container">
+    <p class="section-label">06 · Longevidad</p>
+    <h2 class="section-title">Los ads que más tiempo corrieron</h2>
+    <p style="font-family:-apple-system,sans-serif;font-size:13px;color:var(--gray);margin-bottom:28px;">Si un ad corre 3+ meses sin parar, está convirtiendo. Estos son sus winners probados.</p>
+
+    <div class="card">
+      <div class="longevity-item">
+        <div>
+          <div class="longevity-copy">"Looking for that satisfaction? Get yours and make it at home."</div>
+          <div style="margin-top:6px;"><span class="badge badge-blue">Video 0:07</span> <span class="badge badge-yellow">13 versiones</span></div>
+        </div>
+        <div class="longevity-dates">14 may 2025 – 30 dic 2025</div>
+        <div class="longevity-days">~230<span>días · ~7.5 meses</span></div>
+      </div>
+      <div class="longevity-item">
+        <div>
+          <div class="longevity-copy">"Discover our matcha and accessories and get started now"</div>
+          <div style="margin-top:6px;"><span class="badge badge-gray">Imagen</span> <span class="badge badge-yellow">10 versiones</span></div>
+        </div>
+        <div class="longevity-dates">11 ago 2025 – 24 ene 2026</div>
+        <div class="longevity-days">~166<span>días · ~5.5 meses</span></div>
+      </div>
+      <div class="longevity-item">
+        <div>
+          <div class="longevity-copy">"Discover our matcha and accessories and get started now" (2ª variante)</div>
+          <div style="margin-top:6px;"><span class="badge badge-gray">Imagen</span> <span class="badge badge-yellow">10 versiones</span></div>
+        </div>
+        <div class="longevity-dates">12 ago 2025 – 18 ene 2026</div>
+        <div class="longevity-days">~159<span>días · ~5 meses</span></div>
+      </div>
+      <div class="longevity-item">
+        <div>
+          <div class="longevity-copy">"Try our finest matcha from Wazuka - SAMIDORI Single Origin"</div>
+          <div style="margin-top:6px;"><span class="badge badge-blue">Video 0:03</span> <span class="badge badge-yellow">9 versiones</span></div>
+        </div>
+        <div class="longevity-dates">2 jul 2025 – 2 dic 2025</div>
+        <div class="longevity-days">~153<span>días · ~5 meses</span></div>
+      </div>
+      <div class="longevity-item">
+        <div>
+          <div class="longevity-copy">"01 Samidori - Single cultivar matcha from Wazuka"</div>
+          <div style="margin-top:6px;"><span class="badge badge-blue">Video 0:08</span> <span class="badge badge-yellow">5 versiones</span></div>
+        </div>
+        <div class="longevity-dates">8 jun 2025 – 30 nov 2025</div>
+        <div class="longevity-days">~175<span>días · ~5.5 meses</span></div>
+      </div>
+      <div class="longevity-item">
+        <div>
+          <div class="longevity-copy">"Discover our matcha & accessories. Subscribe now and get 5% off ♥"</div>
+          <div style="margin-top:6px;"><span class="badge badge-gray">Imagen</span> <span class="badge badge-yellow">2 versiones</span></div>
+        </div>
+        <div class="longevity-dates">28 ago 2025 – 2 dic 2025</div>
+        <div class="longevity-days">~96<span>días · ~3 meses</span></div>
+      </div>
+      <div class="longevity-item" style="border-bottom:none;">
+        <div>
+          <div class="longevity-copy">"A casual matcha brand. Whisked in Barcelona."</div>
+          <div style="margin-top:6px;"><span class="badge badge-blue">Video 0:13</span> <span class="badge badge-yellow">10 versiones</span></div>
+        </div>
+        <div class="longevity-dates">2 dic 2025 – 24 ene 2026</div>
+        <div class="longevity-days">~53<span>días · cierre Q4</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px;background:var(--green-pale);border-color:var(--green-muted);">
+      <p style="font-family:-apple-system,sans-serif;font-size:13px;color:var(--green);line-height:1.7;">
+        <strong>Patrón de evergreens:</strong> Sus ads más longevos son invariablemente videos de producto Samidori (el más premium) y ads de awareness/catálogo. Los ads emocionales como "satisfaction" también duran. Lo que NO dura: las promos estacionales (Flash sales de 48h, Black Friday, Valentine's) que corren 3–7 días máximo.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- 8. VELOCIDAD CREATIVA -->
+<div class="section">
+  <div class="container">
+    <p class="section-label">07 · Velocidad Creativa</p>
+    <h2 class="section-title">¿Con qué frecuencia publican?</h2>
+
+    <div class="grid-4" style="margin-bottom:32px;">
+      <div class="card">
+        <div class="card-title">Total de ads</div>
+        <div class="value">~490</div>
+        <div class="sub">en 13 meses</div>
+      </div>
+      <div class="card card-accent">
+        <div class="card-title" style="color:rgba(255,255,255,0.6);">Ritmo promedio</div>
+        <div class="value" style="color:var(--accent);">~38</div>
+        <div class="sub">ads nuevos por mes</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Max versiones/ad</div>
+        <div class="value">13</div>
+        <div class="sub">"Looking for satisfaction"</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Activos ahora</div>
+        <div class="value">27</div>
+        <div class="sub">de ~490 totales</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="gap:24px;align-items:start;">
+      <div>
+        <h3 style="font-size:16px;margin-bottom:20px;font-family:-apple-system,sans-serif;font-weight:600;color:var(--ink-soft);">Timeline de actividad</h3>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-date">Mayo 2025 — Lanzamiento</div>
+            <div class="timeline-content">Primera oleada de ads. <strong>Brand awareness puro</strong>: "Whisked in Barcelona", email capture 10%, starter kits. Corren en batch denso de 10–15 ads simultáneos.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">Junio – Julio 2025</div>
+            <div class="timeline-content"><strong>Samidori push</strong> intensivo. Flash sale 20% (48h, código PACKYOURGREENS). Primera collab Mansi x Tranquilo (Whisk Holder). Nuevos accesorios.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">Agosto – Octubre 2025</div>
+            <div class="timeline-content"><strong>Pico de actividad</strong>. Lanzamiento Red Chawan, nueva plata spoon (3g), múltiples versiones Samidori, ads de "back in stock". Máxima diversidad de copy.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">Noviembre – Diciembre 2025</div>
+            <div class="timeline-content"><strong>Black Friday</strong> (30% off ceramics), nuevo <strong>Tranquilo Blend</strong> de Kagoshima, glass chawan, gift sets navideños. Nuevo chawan transparente de borosilicato.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">Enero 2026 — 2º Aniversario</div>
+            <div class="timeline-content"><strong>15% off aniversario</strong>, email capture previo ("We turn 2 this Sunday"), new gift sets, matcha cortado (Okumidori) como formato de consumo premium.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">Febrero – Marzo 2026</div>
+            <div class="timeline-content"><strong>Valentine's</strong> con kits de regalo, Okumidori Single Origin push, Daily Blend nuevo formato 50g. "Same matcha, more matcha."</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">Abril – Mayo 2026</div>
+            <div class="timeline-content">Lanzamiento <strong>Daily Matcha</strong> (formato nuevo, nombre propio), <strong>Hojicha</strong> (expansión de catálogo), <strong>Tsuyuhikari</strong> Single Origin (3er matcha premium).</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">Junio 2026 — Actual</div>
+            <div class="timeline-content"><span class="active-indicator"><span class="active-dot"></span>27 ads activos</span> Foco en <strong>pack duo Okumidori + Tsuyuhikari</strong>. Están en modo de consolidación del nuevo catálogo de matchas.</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title">¿Testan mucho o apuestan a pocos creativos?</div>
+          <p style="font-family:-apple-system,sans-serif;font-size:13px;color:var(--ink-soft);line-height:1.7;margin-bottom:12px;">
+            <strong>Testan mucho.</strong> El patrón es claro: publican el mismo copy en 5–13 variantes creativas simultáneas y dejan que Meta optimice. Esto es una estrategia de DCO (Dynamic Creative Optimization) casera.
+          </p>
+          <p style="font-family:-apple-system,sans-serif;font-size:13px;color:var(--ink-soft);line-height:1.7;">
+            Los ads con 10–13 versiones son sus apostando mayores: invierten en muchas variantes porque ya validaron el ángulo de copy, y ahora optimizan el visual. Los ads de "una sola versión" suelen ser DPA de catálogo o ads de prueba rápida.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-title">Picos de actividad detectados</div>
+          <p style="font-family:-apple-system,sans-serif;font-size:13px;color:var(--ink-soft);line-height:1.7;">
+            Los <strong>lanzamientos de producto</strong> son el mayor detonante de actividad: cada nuevo SKU genera un batch de 8–12 ads simultáneos. También hay picos en <strong>periodos de restock</strong> (accesibilidad vuelve = urgencia) y en <strong>eventos estacionales</strong>. El período de menor actividad visible es entre enero–febrero 2026 (post-aniversario, pre-Valentine's).
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 9. CONCLUSIÓN ESTRATÉGICA -->
+<div class="section">
+  <div class="container">
+    <p class="section-label">08 · Conclusión Estratégica</p>
+    <h2 class="section-title">Lectura general del playbook</h2>
+
+    <div class="insight-row">
+      <div class="insight-box positive">
+        <div class="insight-title" style="color:var(--green);"><span class="icon">✅</span> Lo que están haciendo bien</div>
+        <ul class="insight-list">
+          <li><strong>Identidad de marca sólida.</strong> "A casual matcha brand. Whisked in Barcelona" es claro, diferenciado y coherente en todos los canales. Posiciona contra marcas japonesas rígidas sin volverse genérico.</li>
+          <li><strong>Máquina de testing creativo.</strong> 490 ads, 38/mes, hasta 13 versiones del mismo copy. Están en modo perpetuo de optimización. Eso se nota en el ROI de sus top ads.</li>
+          <li><strong>Short video como formato central.</strong> 3–21 segundos, visuales de producto. Funciona para stop-scroll en feed y reels. No desperdician presupuesto en videos largos.</li>
+          <li><strong>Email capture como estrategia, no como táctica.</strong> El 10% off aparece en sus ads más impresos. Están construyendo una lista activamente.</li>
+          <li><strong>Lanzamiento de producto como contenido.</strong> Cada nuevo SKU (Tsuyuhikari, Hojicha, glass chawan, Daily Blend 50g) genera un batch propio de ads. El catálogo crece y cada crecimiento es un momento de campaña.</li>
+          <li><strong>Scarcity auténtica.</strong> Los "back in stock" reiterados sugieren un modelo de stock limitado (cerámica artesanal) que también funciona como argumento de urgencia.</li>
+          <li><strong>Collab de producto con Mansi.</strong> Inteligente: añade precio premium, exclusividad y narrativa artesanal sin necesitar un influencer. Las piezas Mansi están excluidas de los descuentos — señal de posicionamiento premium.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="insight-box gap" style="margin-bottom:20px;">
+          <div class="insight-title" style="color:var(--accent-dark);"><span class="icon">⚠️</span> Gaps visibles</div>
+          <ul class="insight-list">
+            <li><strong>Cero creator marketing.</strong> 490 ads y no hay ningún "with @creator". Todo el contenido es de la propia marca. En un nicho de lifestyle donde los UGC de creadores tienen alto ROI, esto es un hueco claro.</li>
+            <li><strong>Sin testimonials ni social proof.</strong> No hay ningún ad con reseñas de clientes, ratings o "X personas ya lo probaron". En ecommerce, esto es fricción de conversión no eliminada.</li>
+            <li><strong>Todo el copy está en inglés.</strong> Marca española, con equipo en España, operando en EUR. No hay ningún ad visible en español. Si tienen audiencia significativa en España, están dejando conversión encima de la mesa.</li>
+            <li><strong>Sin contenido educativo como ad.</strong> "¿Por qué matcha y no café?" o "cómo preparar tu primer matcha" son hooks potentes para cold audience que no aparecen en ningún ad.</li>
+          </ul>
+        </div>
+        <div class="insight-box opportunity">
+          <div class="insight-title" style="color:var(--red);"><span class="icon">🎯</span> Oportunidades para diferenciarse</div>
+          <ul class="insight-list">
+            <li><strong>Entrar con creator marketing.</strong> UGC de micro-creadores de wellness, coffee-to-matcha converters o lifestyle creators en España/Europa. Es el gap más obvio y explotable.</li>
+            <li><strong>Comparación directa café vs matcha.</strong> "Cambié el café por matcha y esto pasó" es un hook evergreen que ellos aún no han tocado.</li>
+            <li><strong>Modelo de suscripción.</strong> Con el email capture que ya tienen y la rotación de productos, una suscripción mensual de matcha sería lógica. No se ve ningún ad en esa dirección.</li>
+            <li><strong>Content ads en español.</strong> Si sos competidor, un funnel en español targeting España es prácticamente sin competencia directa de su parte.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="conclusion">
+      <h3>Lectura final</h3>
+      <p>Tranquilo Matcha es una marca joven (2.5 años) que ha construido una operación de paid media más sofisticada de lo que su tamaño sugiere. Con 490 ads, testing constante y un calendario de lanzamientos bien cadenciado, operan con mentalidad de equipo de performance, no de boutique artesanal que "hace un par de ads".</p>
+      <p>Su mayor fortaleza es la <strong>consistencia de identidad</strong> combinada con <strong>alta velocidad creativa</strong>. Saben quiénes son ("casual, whisked in Barcelona"), tienen claro el núcleo de su funnel (email capture 10% off → compra) y ejecutan bien el ciclo de lanzamiento de producto → ads → evergreen.</p>
+      <p>Su mayor vulnerabilidad es que <strong>todo viene de ellos mismos</strong>. Sin voces externas (creadores, testimonios), sin idioma local (español), y sin contenido educativo, su cold traffic depende enteramente de cuánto presupuesto metan. El día que aparezca un competidor con un playbook de creator marketing bien ejecutado y funnel en español, este gap va a costar.</p>
+      <p>Para quien quiera competir con ellos: <strong>el espacio no ocupado es creator UGC + español + educación sobre matcha + modelo de suscripción</strong>. No los copies — ve exactamente a donde ellos no están.</p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <strong>Tranquilo Matcha Ad Library Analysis</strong> · Datos extraídos en vivo desde Meta Ad Library · <strong>Junio 2026</strong><br>
+  Página ID: 213700338491498 · @tranquilomatcha · tranquilomatcha.com · Creada: 14 ene 2024
+</div>
+
+</body>
+</html>
